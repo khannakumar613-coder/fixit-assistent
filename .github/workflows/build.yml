@@ -10,36 +10,42 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # 1. GitHub Repository से कोड लेगा
+    # 1. GitHub Repository से कोड लें
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    # 2. Python 3.10 सेट करेगा
+    # 2. Python 3.10 सेट करें
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
 
-    # 3. Android build के लिए जरूरी सिस्टम टूल्स इंस्टॉल करेगा
+    # 3. सभी जरूरी ऑटोटूल्स और डिपेंडेंसीज इंस्टॉल करें (फिक्सेड)
     - name: Install System Dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential git python3-pip ccache libffi-dev \
-        libssl-dev zip unzip openjdk-17-jdk autoconf libtool pkg-config cmake \
-        libsqlite3-dev libbz2-dev libreadline-dev libncurses5-dev
+        libssl-dev zip unzip openjdk-17-jdk autoconf automake libtool libtool-bin \
+        autoconf-archive pkg-config cmake libsqlite3-dev libbz2-dev libreadline-dev \
+        libncurses5-dev m4 gettext
 
-    # 4. Buildozer और Cython इंस्टॉल करेगा
+    # 4. Buildozer और Cython इंस्टॉल करें
     - name: Install Buildozer and Cython
       run: |
         pip install --upgrade pip
         pip install buildozer cython==0.29.33
 
-    # 5. Buildozer चलाकर APK बनाएगा
+    # 5. Buildozer से APK बनाएं (3 बार Retry लॉजिक के साथ)
     - name: Build APK with Buildozer
       run: |
-        yes | buildozer -v android debug
+        for i in 1 2 3; do
+          echo "Attempt $i to build APK..."
+          yes | buildozer -v android debug && break
+          echo "Build failed (attempt $i). Retrying in 10 seconds..."
+          sleep 10
+        done
 
-    # 6. तैयार APK को Download करने के लिए Artifacts में अपलोड करेगा
+    # 6. तैयार APK को Artifacts में सेव करें
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:

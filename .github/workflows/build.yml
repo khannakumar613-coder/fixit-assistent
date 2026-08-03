@@ -50,4 +50,5 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: FixIt-Assistant-APK
-        path: bin/*.apk
+        path: "**/bin/*"
+      
